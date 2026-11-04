@@ -1,1 +1,1 @@
-requests
+requests pytest python-dotenv
