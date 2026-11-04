@@ -1,66 +1,58 @@
-import os
-import requests
-
-API_KEY = os.getenv("API_FOOTBALL_KEY")
+import os import requests
 
 BASE_URL = "https://v3.football.api-sports.io"
 
-HEADERS = {
-    "x-apisports-key": API_KEY
+def get_fixtures(date): api_key = os.getenv("API_FOOTBALL_KEY")
+
+if not api_key:
+    raise RuntimeError("Football API key is missing")
+
+headers = {
+    "x-apisports-key": api_key
 }
 
-def get_fixtures(date):
-    url = f"{BASE_URL}/fixtures"
+params = {
+    "date": date,
+    "timezone": "Africa/Dar_es_Salaam"
+}
 
-    params = {
-        "date": date,
-        "timezone": "Africa/Dar_es_Salaam"
-    }
+response = requests.get(
+    f"{BASE_URL}/fixtures",
+    headers=headers,
+    params=params,
+    timeout=20
+)
 
-    try:
-        response = requests.get(
-            url,
-            headers=HEADERS,
-            params=params,
-            timeout=20
-        )
+response.raise_for_status()
 
-        response.raise_for_status()
-        data = response.json()
+data = response.json()
 
-        if data.get("errors"):
-            print("API error:", data["errors"])
-            return []
+if data.get("errors"):
+    raise RuntimeError(f"Football API error: {data['errors']}")
 
-        return data.get("response", [])
-
-    except requests.RequestException as error:
-        print("Connection error:", error)
-        return []
+return data.get("response", [])
 
 
-def show_matches(date):
-    matches = get_fixtures(date)
+def show_matches(date): matches = get_fixtures(date)
 
-    print("\n⚽ FOOTBALL MATCHES")
+print("\nFOOTBALL MATCH ANALYSIS")
 
-    if not matches:
-        print("Hakuna mechi zilizopatikana.")
-        return
+if not matches:
+    print("No matches found.")
+    return
 
-    for match in matches:
-        home = match["teams"]["home"]["name"]
-        away = match["teams"]["away"]["name"]
-        league = match["league"]["name"]
-        time = match["fixture"]["date"]
+for match in matches:
+    home = match["teams"]["home"]["name"]
+    away = match["teams"]["away"]["name"]
+    league = match["league"]["name"]
+    kickoff = match["fixture"]["date"]
 
-        print(f"\n{league}")
-        print(f"{home} vs {away}")
-        print(f"Time: {time}")
+    print(f"\nLeague: {league}")
+    print(f"Match: {home} vs {away}")
+    print(f"Kickoff: {kickoff}")
 
 
-if __name__ == "__main__":
-    from datetime import datetime
+if name == "main": from datetime import datetime
 
-    today = datetime.now().strftime("%Y-%m-%d")
-    show_matches(today)
+today = datetime.now().strftime("%Y-%m-%d")
+show_matches(today)
